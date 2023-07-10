@@ -1,0 +1,2 @@
+time,in1,in2,name_fuel,name_fuel_gate,name_input1_gate,name_input2_gate,name_input_gate,name_mid,name_output_gate,name_output_gate,name_threshold,out
+0,10.0,90.0,200,0,0,0,0,0,200,100,133.0,0
