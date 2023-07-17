@@ -183,7 +183,7 @@ class Application(tk.Tk):
             return
         
         # Add the label widget to the canvas
-        label.add_to_pannel()
+        label.add_to_panel()
         
         #Place in random position so gates will no overlap
         label.on_drag_motion(random.randint(1, 100) , random.randint(1, 200))  

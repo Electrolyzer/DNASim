@@ -126,7 +126,7 @@ class GateTwoInOneOut(GateLabel):
         self.out_label = tk.Label(master, text=out_text)  
         self.interface_buckets = [(self.in1_label["text"], "ON"), (self.in2_label["text"], "ON"), (self.out_label["text"], "EMPTY")]
         
-    def add_to_pannel(self):
+    def add_to_panel(self):
         # Add the image label widget to the canvas
         self.id = self.master.create_window((30, 25), window=self, anchor="nw") 
         
@@ -151,7 +151,7 @@ class GateTwoInOneOut(GateLabel):
         
     def get_ports_string(self):
         return "input1="+self.in1_label["text"]+", input2="+self.in2_label["text"]+", output="+self.out_label["text"]
- 
+
 
 #######################################################
 ###                 SB Basic Gates                  ###
@@ -168,7 +168,7 @@ class And2SB(GateTwoInOneOut):
 #######################################################
 ###                 DB Basic Gates                  ###
 #######################################################
-        
+
 class And2DB(GateTwoInOneOut):
     def __init__(self, master, **kwargs):
         super().__init__(master, impath=os.path.join("graphics","And2.JPG"), kwargs=kwargs)
@@ -225,8 +225,8 @@ class Threshold2DB(GateTwoInOneOut):
         self.w2_label = tk.Label(master, text=w2_text)
         self.th_label = tk.Label(master, text=th_text)   
     
-    def add_to_pannel(self):
-        super().add_to_pannel()
+    def add_to_panel(self):
+        super().add_to_panel()
         self.w1_id = self.master.create_window((65, 35), window=self.w1_label, anchor="nw") 
         self.w2_id = self.master.create_window((65, 70), window=self.w2_label, anchor="nw") 
         self.th_id = self.master.create_window((100, 52), window=self.th_label, anchor="nw")    
@@ -274,8 +274,8 @@ class Threshold3DB(Threshold2DB):
         self.w3_label = tk.Label(master, text=w3_text)  
         self.interface_buckets.append((self.in3_label["text"], "ON"))
         
-    def add_to_pannel(self):
-        super().add_to_pannel()
+    def add_to_panel(self):
+        super().add_to_panel()
         self.master.move(self.out_id, 0, 15)
         self.master.move(self.th_id, 0, 15)
         self.in3_id = self.master.create_window((5, 105), window=self.in3_label, anchor="nw") 
@@ -318,8 +318,8 @@ class Threshold4DB(Threshold3DB):
         self.in4_label = tk.Label(master, text=in4_text)
         self.w4_label = tk.Label(master, text=w4_text)  
         
-    def add_to_pannel(self):
-        super().add_to_pannel()
+    def add_to_panel(self):
+        super().add_to_panel()
         self.master.move(self.out_id, 0, 17)
         self.master.move(self.th_id, 0, 17)
         self.in4_id = self.master.create_window((5, 140), window=self.in4_label, anchor="nw") 
@@ -373,7 +373,7 @@ class Mult2SeesawDB(GateLabel):
         self.all_labels = [self.name_label, self.in_label, self.out1_label, self.out2_label, self.w1_label, self.w2_label]
         self.interface_buckets = [(self.in_label["text"], "ON"), (self.out1_label["text"], "EMPTY"), (self.out2_label["text"], "EMPTY")]
         
-    def add_to_pannel(self):
+    def add_to_panel(self):
         # Add the image label widget to the canvas
         self.id = self.master.create_window((30, 25), window=self, anchor="nw") 
         
@@ -425,7 +425,7 @@ class Mult3SeesawDB(Mult2SeesawDB):
         self.all_labels.extend([self.out3_label,self.w3_label])
         self.interface_buckets.append((self.out3_label["text"], "EMPTY"))
                 
-    def add_to_pannel(self):
+    def add_to_panel(self):
         # Add the image label widget to the canvas
         self.id = self.master.create_window((30, 25), window=self, anchor="nw") 
         
@@ -493,8 +493,8 @@ class Amp2SeesawSB(Mult2SeesawDB):
         self.th_label = tk.Label(master, text=th_text)
         self.all_labels.append(self.th_label)
 
-    def add_to_pannel(self):
-        super().add_to_pannel()
+    def add_to_panel(self):
+        super().add_to_panel()
         self.th_id = self.master.create_window((75, 57), window=self.th_label, anchor="nw") 
         self.all_ids.append(self.th_id)
 
@@ -527,8 +527,8 @@ class Amp3SeesawSB(Mult3SeesawDB):
         self.th_label = tk.Label(master, text=th_text)
         self.all_labels.append(self.th_label)
 
-    def add_to_pannel(self):
-        super().add_to_pannel()
+    def add_to_panel(self):
+        super().add_to_panel()
         self.th_id = self.master.create_window((85, 70), window=self.th_label, anchor="nw") 
         self.all_ids.append(self.th_id)
 
@@ -570,7 +570,7 @@ class Integ2SeesawSB(GateLabel):
         self.all_labels = [self.name_label, self.in1_label, self.in2_label, self.out_label, self.w_label]
         self.interface_buckets = [(self.in1_label["text"], "ON"), (self.in2_label["text"], "ON"), (self.out_label["text"], "EMPTY")]
         
-    def add_to_pannel(self):
+    def add_to_panel(self):
         # Add the image label widget to the canvas
         self.id = self.master.create_window((30, 25), window=self, anchor="nw") 
         
@@ -620,7 +620,7 @@ class Integ3SeesawSB(Integ2SeesawSB):
         self.all_labels.append(self.in3_label)
         self.interface_buckets.append((self.in3_label["text"], "ON"))
         
-    def add_to_pannel(self):
+    def add_to_panel(self):
         # Add the image label widget to the canvas
         self.id = self.master.create_window((30, 25), window=self, anchor="nw") 
         
@@ -666,7 +666,7 @@ class ThSeesawSB(GateLabel):
         self.out_label = tk.Label(master, text=out_text)
         self.interface_buckets = [(self.in_label["text"], "ON"), (self.out_label["text"], "EMPTY")]
         
-    def add_to_pannel(self):
+    def add_to_panel(self):
         # Add the image label widget to the canvas
         self.id = self.master.create_window((30, 25), window=self, anchor="nw") 
         
