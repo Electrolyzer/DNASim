@@ -185,12 +185,13 @@ class ReporterSeesaw(Seesaw):
 
 
 class DelayGate(Seesaw):
-    def __init__(self, name, time, output):
-        self.__Id = DnaBucket(name + "_Id", 1000*Amounts.N)
+    def __init__(self, name, delayAmount, output):
+        self.name = name
+        self.__Id = DnaBucket(name + "_Id", 100*Amounts.N)
         self.__output = output
-        self.__output_gateS = DnaBucket(name + "_output_gate", 1000*Amounts.N)
+        self.__output_gateS = DnaBucket(name + "_output_gate", 100*Amounts.N)
         self.__Id_gateS = DnaBucket(name + "_Id_gate", Amounts.EMPTY)
-        self.__delay = DnaBucket(name + "_delay", time*Amounts.N)
+        self.__delay = DnaBucket(name + "_delay", delayAmount*Amounts.N)
         self.bucket_list = [self.__Id, self.__output, self.__delay, self.__output_gateS, self.__Id_gateS]
 
     def get_buckets_as_list(self) -> list:
@@ -206,7 +207,7 @@ class DelayGate(Seesaw):
 
 class SubtractionGate(Seesaw):
     def __init__(self, name, inp, output) -> None:
-        self.name = name + "_subtraction_gate"
+        self.name = name
         self.__inp = inp
         self.__inp_threshold = DnaBucket(name + "_inp_threshold", Amounts.EMPTY)
         self.__outputBlocker_threshold = DnaBucket(name + "_outputBlocker_threshold", Amounts.N)
@@ -243,4 +244,44 @@ class SubtractionGate(Seesaw):
 
         self.__output.dt += ks * (-self.__inp_threshold.amount * self.__output.amount)
 
-#class GateEnable(seesaw):
+class GateEnable(Seesaw):
+    def __init__(self, name, enable, inp, output):
+        self.name = name
+        self.__inp  = inp
+        self.__enable = enable
+        self.__output = output
+        self.__blocker = DnaBucket(name + "_blocker", Amounts.EMPTY)
+        self.__blocker_output_gate = DnaBucket(name + "_blocker_output_gate", Amounts.N)
+        self.__enable_output_gate =  DnaBucket(name + "_enable_output_gate", Amounts.EMPTY)
+        self.__enable_input_gate = DnaBucket(name + "_enable_input_gate", Amounts.EMPTY)
+
+        self.bucketList = [self.__inp, self.__enable, self.__output, self.__blocker, self.__blocker_output_gate,
+                            self.__enable_output_gate, self.__enable_input_gate]
+
+    def get_buckets_as_list(self) -> list:
+        return self.bucketList
+
+    def calculate_transfer_amounts(self, ks, kf):
+
+        self.__enable.dt += ks * (-self.__enable.amount*self.__blocker_output_gate.amount
+                                  + self.__enable_output_gate.amount * self.__blocker.amount)
+
+        self.__inp.dt += ks * (-self.__inp.amount * self.__enable_output_gate.amount
+                               + self.__enable_input_gate.amount * self.__output.amount)
+
+        self.__output.dt += ks * (self.__inp.amount * self.__enable_output_gate.amount
+                                  - self.__enable_input_gate.amount * self.__output.amount)
+
+        self.__blocker.dt += ks * (-self.__enable_output_gate.amount * self.__blocker.amount
+                                   + self.__enable.amount*self.__blocker_output_gate.amount)
+
+        self.__enable_output_gate.dt += ks * (self.__enable.amount * self.__blocker_output_gate.amount
+                                              + self.__enable_input_gate.amount * self.__output.amount
+                                              - self.__enable_output_gate.amount * self.__inp.amount
+                                              - self.__enable_output_gate.amount * self.__blocker.amount)
+
+        self.__blocker_output_gate.dt += ks * (self.__enable_output_gate.amount * self.__blocker.amount
+                                               - self.__enable.amount * self.__blocker_output_gate.amount)
+
+        self.__enable_input_gate.dt += ks * (self.__enable_output_gate.amount * self.__inp.amount
+                                             - self.__enable_input_gate.amount * self.__output.amount)
