@@ -20,9 +20,9 @@ class ThresholdingSeesaw(Seesaw):
         self.__input = inp
         self.__input_gate = DnaBucket(name + "_input_gate", Amounts.EMPTY)
         self.__threshold = DnaBucket(name + "_threshold", threshold_amount)
-        self.__fuel = DnaBucket(name + "_fuel", 2*Amounts.N)
+        self.__fuel = DnaBucket(name + "_fuel", 2 * Amounts.N)
         self.__fuel_gate = DnaBucket(name + "_fuel_gate", Amounts.EMPTY)
-        self.__output_gate = DnaBucket(name + "_output_gate", 1*Amounts.N)
+        self.__output_gate = DnaBucket(name + "_output_gate", 1 * Amounts.N)
         self.__output = output
 
     def get_buckets_as_list(self) -> list:
@@ -62,7 +62,7 @@ class IntegratingSeesaw(Seesaw):
         self.__inputs_list = inputs_list
 
         self.__input_gates_list = []
-        for i in range(1, len(self.__inputs_list)+1):
+        for i in range(1, len(self.__inputs_list) + 1):
             self.__input_gates_list.append(DnaBucket(name + "_input" + str(i) + "_gate", Amounts.EMPTY))
 
         self.__output_gate = DnaBucket(name + "_output_gate", weight * Amounts.N)
@@ -102,8 +102,9 @@ class AmplifyingSeesaw(Seesaw):
         self.__outputs_list = outputs_list
 
         self.__output_gates_list = []
-        for i in range(1, len(self.__outputs_list)+1):
-            self.__output_gates_list.append(DnaBucket(name + "_output"+str(i)+"_gate", weight_list[i-1] * Amounts.N))
+        for i in range(1, len(self.__outputs_list) + 1):
+            self.__output_gates_list.append(
+                DnaBucket(name + "_output" + str(i) + "_gate", weight_list[i - 1] * Amounts.N))
 
         self.__threshold = DnaBucket(name + "_threshold", threshold_amount * Amounts.N)
 
@@ -135,10 +136,10 @@ class AmplifyingSeesaw(Seesaw):
 
         for i, output in enumerate(self.__outputs_list):
             output.dt += ks * self.__input.amount * self.__output_gates_list[i].amount - \
-                      ks * self.__input_gate.amount * output.amount
+                         ks * self.__input_gate.amount * output.amount
 
             self.__output_gates_list[i].dt += ks * self.__input_gate.amount * output.amount - \
-                                           ks * self.__input.amount * self.__output_gates_list[i].amount
+                                              ks * self.__input.amount * self.__output_gates_list[i].amount
 
         self.__fuel.dt += ks * self.__fuel_gate.amount * self.__input.amount - \
                           ks * self.__fuel.amount * self.__input_gate.amount
@@ -180,4 +181,66 @@ class ReporterSeesaw(Seesaw):
 
     def tostring(self):
         return "ReporterSeesaw(\"" + self.name + "\", " + \
-               self.__input.name + ", " + self.__fluor.name + ")"
+            self.__input.name + ", " + self.__fluor.name + ")"
+
+
+class DelayGate(Seesaw):
+    def __init__(self, name, time, output):
+        self.__Id = DnaBucket(name + "_Id", 1000*Amounts.N)
+        self.__output = output
+        self.__output_gateS = DnaBucket(name + "_output_gate", 1000*Amounts.N)
+        self.__Id_gateS = DnaBucket(name + "_Id_gate", Amounts.EMPTY)
+        self.__delay = DnaBucket(name + "_delay", time*Amounts.N)
+        self.bucket_list = [self.__Id, self.__output, self.__delay, self.__output_gateS, self.__Id_gateS]
+
+    def get_buckets_as_list(self) -> list:
+        return self.bucket_list
+
+    def calculate_transfer_amounts(self, ks, kf):
+        ks /= 10**5
+        self.__Id.dt += ks * (-self.__Id.amount*self.__output_gateS.amount)
+        self.__output_gateS.dt += ks * (-self.__Id.amount*self.__output_gateS.amount)
+        self.__output.dt += ks * (self.__Id.amount*self.__output_gateS.amount) - kf * (self.__output.amount*self.__delay.amount)
+        self.__delay.dt += kf * (-self.__output.amount*self.__delay.amount)
+
+
+class SubtractionGate(Seesaw):
+    def __init__(self, name, inp, output) -> None:
+        self.name = name + "_subtraction_gate"
+        self.__inp = inp
+        self.__inp_threshold = DnaBucket(name + "_inp_threshold", Amounts.EMPTY)
+        self.__outputBlocker_threshold = DnaBucket(name + "_outputBlocker_threshold", Amounts.N)
+        self.__outputBlocker = DnaBucket(name + "_outputBlocker", Amounts.EMPTY)
+        self.__thresholdDs = DnaBucket(name + "_thresholdDs", Amounts.N)
+        self.__inp_output_gate = DnaBucket(name + "_inp_output_gate", Amounts.EMPTY)
+        self.__output = output
+
+        self.bucketList = [self.__inp, self.__inp_threshold, self.__outputBlocker_threshold, self.__outputBlocker,
+                           self.__inp_threshold, self.__thresholdDs, self.__inp_output_gate, self.__output]
+
+    def get_buckets_as_list(self) -> list:
+        return self.bucketList
+
+    def calculate_transfer_amounts(self, ks, kf) -> None:
+
+        self.__inp.dt += ks * (-self.__inp.amount * self.__outputBlocker_threshold.amount +
+                               self.__inp_threshold.amount * self.__outputBlocker.amount)
+
+        self.__inp_threshold.dt += ks * (self.__inp.amount * self.__outputBlocker_threshold.amount -
+                                         self.__inp_threshold.amount * self.__outputBlocker.amount
+                                         - self.__inp_threshold.amount * self.__output.amount)
+
+        self.__outputBlocker_threshold.dt += ks * (-self.__inp.amount * self.__outputBlocker_threshold.amount
+                                                   + self.__inp_threshold.amount * self.__outputBlocker.amount)
+
+        self.__outputBlocker.dt += ks * (self.__inp.amount * self.__outputBlocker_threshold.amount
+                                         - self.__inp_threshold.amount * self.__outputBlocker.amount
+                                         -self.__outputBlocker.amount * self.__thresholdDs.amount)
+
+        self.__thresholdDs.dt += ks * (-self.__outputBlocker.amount * self.__thresholdDs.amount)
+
+        self.__inp_output_gate.dt += ks * (self.__inp_threshold.amount * self.__output.amount)
+
+        self.__output.dt += ks * (-self.__inp_threshold.amount * self.__output.amount)
+
+#class GateEnable(seesaw):

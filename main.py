@@ -4,34 +4,53 @@ from Simulator import *
 from DualRailGates import *
 
 
-def simulate_and2_gate():
+def simulate_delay():
     s = System()
-    s.t_max = 36000  # [sec]
+    s.t_max = 1500  # [sec]
     s.K_fast = 0.000315  # fast toehold binding rate constant [nM/s]
     s.K_slow = 0.000015 * 0.95  # slow toehold binding rate constant [nM/s]
+    s.K_very_slow = 10**-10
     s.print_steps = False
 
-    w_1 = DnaBucket("w_1", Amounts.N)
+    w_1 = DnaBucket("w_1", Amounts.EMPTY)
     w_2 = DnaBucket("w_2", Amounts.N)
     w_3 = DnaBucket("w_3", Amounts.EMPTY)
     w_4 = DnaBucket("w_4", Amounts.EMPTY)
     fluor = DnaBucket("fluor", Amounts.EMPTY)
 
-    and_gate = And2Gate(name="and_gate", input1=w_1, input2=w_2, output=w_3)
-    and_gate2 = And2Gate(name="and_gate_2", input1=w_1, input2=w_3, output=w_4)
-    reporter = ReporterSeesaw("reporter", w_4, fluor)
+    delay_gate = DelayGate("delay_gate", 5, w_1)
+    #reporter = ReporterSeesaw("reporter", w_1, fluor)
 
-    s.gates_list.append(and_gate)
-    s.gates_list.append(and_gate2)
-    s.gates_list.append(reporter)
+    s.gates_list.append(delay_gate)
+    #s.gates_list.append(reporter)
 
     s.simulate()
 
-    plot_graphs(s.csv_fname, ["w_1", "w_2", "w_3", "w_4", "fluor"])
+    plot_graphs(s.csv_fname, ["w_1"])
 
+def simulate_subtraction():
+    s = System()
+    s.t_max = 15000  # [sec]
+    s.K_fast = 0.000315  # fast toehold binding rate constant [nM/s]
+    s.K_slow = 0.000015 * 0.95  # slow toehold binding rate constant [nM/s]
+    s.print_steps = False
+
+    w_1 = DnaBucket("w_1", Amounts.OFF)
+    w_2 = DnaBucket("w_2", Amounts.N)
+    fluor = DnaBucket("fluor", Amounts.EMPTY)
+
+    subtractionGate = SubtractionGate("subtractionGate", w_1, w_2)
+    #reporter = ReporterSeesaw("reporter", w_1, fluor)
+
+    s.gates_list.append(subtractionGate)
+    #s.gates_list.append(reporter)
+
+    s.simulate()
+
+    plot_graphs(s.csv_fname, ["w_1", "w_2"])
 
 def main() -> int:
-    simulate_and2_gate()
+    simulate_subtraction()
     return 0
 
 
