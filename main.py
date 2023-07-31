@@ -72,15 +72,16 @@ def simulate_enable():
 
 def testNotGate():
     s = System()
-    s.t_max = 80000  # [sec]
+    s.t_max = 100000  # [sec]
     s.K_fast = 0.000315  # fast toehold binding rate constant [nM/s]
     s.K_slow = 0.000015 * 0.95  # slow toehold binding rate constant [nM/s]
     s.print_steps = False
 
-    input = DnaBucket("input", Amounts.EMPTY)
+    input = DnaBucket("input", Amounts.OFF)
     enabler = DnaBucket("enabler", Amounts.EMPTY)
     subtractOutput = DnaBucket("subtractOutput", Amounts.N)
     enableOutput = DnaBucket("enableOutput", Amounts.EMPTY)
+    thresholdOutput = DnaBucket("threshold_output", Amounts.EMPTY)
     fluor = DnaBucket("fluor", Amounts.EMPTY)
 
 
@@ -89,19 +90,42 @@ def testNotGate():
     delay_gate = DelayGate("delay_gate", 4, enabler)
     subtractionGate = SubtractionGate("subtractionGate", input, subtractOutput)
     enableGate = GateEnable("GateEnable", enabler, subtractOutput, enableOutput)
-    reporter = ReporterSeesaw("reporter", enableOutput, fluor)
+    threshold = ThresholdingSeesaw("threshold", enableOutput, .5*Amounts.N, thresholdOutput)
+    reporter = ReporterSeesaw("reporter", thresholdOutput, fluor)
 
     s.gates_list.append(enableGate)
     s.gates_list.append(delay_gate)
     s.gates_list.append(subtractionGate)
+    s.gates_list.append(threshold)
     s.gates_list.append(reporter)
 
     s.simulate()
 
-    plot_graphs(s.csv_fname, ["input", "subtractOutput", "enableOutput", "fluor"])
+    plot_graphs(s.csv_fname, ["input", "subtractOutput", "enableOutput", "threshold_output", "fluor"])
+
+def testFullNot():
+    s = System()
+    s.t_max = 80000  # [sec]
+    s.K_fast = 0.000315  # fast toehold binding rate constant [nM/s]
+    s.K_slow = 0.000015 * 0.95  # slow toehold binding rate constant [nM/s]
+    s.print_steps = False
+
+    input = DnaBucket("input", Amounts.OFF)
+    output = DnaBucket("output", Amounts.EMPTY)
+    fluor = DnaBucket("fluor", Amounts.EMPTY)
+
+    notGate = NotGate("notGate", input, output, 2)
+    reporter = ReporterSeesaw("reporter", output, fluor)
+
+    s.gates_list.append(notGate)
+    s.gates_list.append(reporter)
+
+    s.simulate()
+
+    plot_graphs(s.csv_fname, ["input", "output", "fluor"])
 
 def main() -> int:
-    testNotGate()
+    testFullNot()
     return 0
 
 
