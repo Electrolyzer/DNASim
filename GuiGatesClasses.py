@@ -29,7 +29,8 @@ def get_gates_map():
             "Mult3SeesawDB": Mult3SeesawDB,
             "Threshold2DB": Threshold2DB,
             "Threshold3DB": Threshold3DB,
-            "Threshold4DB": Threshold4DB
+            "Threshold4DB": Threshold4DB,
+            "NotSB": NotSB
            }
 
 
@@ -153,17 +154,75 @@ class GateTwoInOneOut(GateLabel):
         return "input1="+self.in1_label["text"]+", input2="+self.in2_label["text"]+", output="+self.out_label["text"]
 
 
+class GateOneInOneOut(GateLabel):
+    def __init__(self, master, impath, **kwargs):
+        # Get buckets dialog
+        dialog = CustomDialog(master, title="Gate Buckets", prompts=["name", "inp", "out", "delay"],
+                                                            defaults=["name", "inp", "out", "1"])
+        master.wait_window(dialog)
+        if dialog.result:
+            # The user clicked OK
+            [name_text, in_text, out_text, delay] = dialog.result
+        else:
+            return
+
+            # init image widget label
+        super().__init__(master, impath=impath, kwargs=kwargs)
+        self.make_labels(master, name_text, in_text, out_text, delay)
+
+    def make_labels(self, master, name_text, in_text, out_text, delay):
+        # Create the text labels
+        self.name_label = tk.Label(master, text=name_text)
+        self.in_label = tk.Label(master, text=in_text)
+        self.out_label = tk.Label(master, text=out_text)
+        self.delay_label = tk.Label(master, text=str(delay))
+        self.interface_buckets = [(self.in_label["text"], "ON"), (self.out_label["text"], "EMPTY")]
+
+    def add_to_panel(self):
+        # Add the image label widget to the canvas
+        self.id = self.master.create_window((30, 25), window=self, anchor="nw")
+
+        # Add the text label widgets to the canvas
+        self.name_id = self.master.create_window((70, 5), window=self.name_label, anchor="nw")
+        self.in_id = self.master.create_window((5, 35), window=self.in_label, anchor="nw")
+        self.out_id = self.master.create_window((150, 35), window=self.out_label, anchor="nw")
+        self.delay_id = self.master.create_window((70, 45), window=self.delay_label, anchor="nw")
+
+    def on_drag_motion(self, delta_x, delta_y):
+        self.master.move(self.id, delta_x, delta_y)
+        self.master.move(self.name_id, delta_x, delta_y)
+        self.master.move(self.in_id, delta_x, delta_y)
+        self.master.move(self.out_id, delta_x, delta_y)
+        self.master.move(self.delay_id, delta_x, delta_y)
+
+
+    def destroy_all_labels(self):
+        self.name_label.destroy()
+        self.in_label.destroy()
+        self.out_label.destroy()
+        self.delay_label.destroy()
+
+    def get_ports_string(self):
+        return "inp=" + self.in_label["text"] + ", output=" + self.out_label["text"] + ", delay=" + str(self.delay_label["text"])
+
+
 #######################################################
 ###                 SB Basic Gates                  ###
 #######################################################
 
 class And2SB(GateTwoInOneOut):
     def __init__(self, master, **kwargs):
-        super().__init__(master, impath=os.path.join("graphics","And2.JPG"), kwargs=kwargs)
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","And2.JPG"), kwargs=kwargs)
         
     def get_type_string(self):
         return "And2Gate"
 
+class NotSB(GateOneInOneOut):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Not.PNG"), kwargs=kwargs)
+
+    def get_type_string(self):
+        return "NotGate"
 
 #######################################################
 ###                 DB Basic Gates                  ###
@@ -171,28 +230,28 @@ class And2SB(GateTwoInOneOut):
 
 class And2DB(GateTwoInOneOut):
     def __init__(self, master, **kwargs):
-        super().__init__(master, impath=os.path.join("graphics","And2.JPG"), kwargs=kwargs)
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","And2.JPG"), kwargs=kwargs)
         
     def get_type_string(self):
         return "And2DRGate"
  
 class Or2SB(GateTwoInOneOut):
     def __init__(self, master, **kwargs):
-        super().__init__(master, impath=os.path.join("graphics","Or2.JPG"), kwargs=kwargs)
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Or2.JPG"), kwargs=kwargs)
         
     def get_type_string(self):
         return "Or2Gate"
         
 class Or2DB(GateTwoInOneOut):
     def __init__(self, master, **kwargs):
-        super().__init__(master, impath=os.path.join("graphics","Or2.JPG"), kwargs=kwargs)
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Or2.JPG"), kwargs=kwargs)
      
     def get_type_string(self):
         return "Or2DRGate"
         
 class Nand2DB(GateTwoInOneOut):
     def __init__(self, master, **kwargs):
-        super().__init__(master, impath=os.path.join("graphics","Nand2.JPG"), kwargs=kwargs)
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Nand2.JPG"), kwargs=kwargs)
         
     def get_type_string(self):
         return "Nand2DRGate"
@@ -215,7 +274,7 @@ class Threshold2DB(GateTwoInOneOut):
             return 
                    
         # init image widget label
-        super(GateTwoInOneOut, self).__init__(master, impath=os.path.join("graphics","And2.JPG"), kwargs=kwargs)
+        super(GateTwoInOneOut, self).__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","And2.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in1_text, in2_text, w1_text, w2_text, out_text, th_text)
                  
     def make_labels(self, master, name_text, in1_text, in2_text, w1_text, w2_text, out_text, th_text):
@@ -264,7 +323,7 @@ class Threshold3DB(Threshold2DB):
             return 
                    
         # init image widget label
-        super(GateTwoInOneOut, self).__init__(master, impath=os.path.join("graphics","Threshold3.JPG"), kwargs=kwargs)
+        super(GateTwoInOneOut, self).__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Threshold3.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in1_text, in2_text, in3_text, w1_text, w2_text, w3_text, out_text, th_text)
         
     def make_labels(self, master, name_text, in1_text, in2_text, in3_text, w1_text, w2_text, w3_text, out_text, th_text):
@@ -309,7 +368,7 @@ class Threshold4DB(Threshold3DB):
             return 
                    
         # init image widget label
-        super(GateTwoInOneOut, self).__init__(master, impath=os.path.join("graphics","Threshold4.JPG"), kwargs=kwargs)
+        super(GateTwoInOneOut, self).__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Threshold4.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in1_text, in2_text, in3_text, in4_text, w1_text, w2_text, w3_text, w4_text, out_text, th_text)
         
     def make_labels(self, master, name_text, in1_text, in2_text, in3_text, in4_text, w1_text, w2_text, w3_text, w4_text, out_text, th_text):
@@ -359,7 +418,7 @@ class Mult2SeesawDB(GateLabel):
             return 
                    
         # init image widget label
-        super().__init__(master, impath=os.path.join("graphics","Mult2Seesaw.JPG"), kwargs=kwargs)
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Mult2Seesaw.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in_text, out1_text, out2_text, w1_text, w2_text)
 
     def make_labels(self, master, name_text, in_text, out1_text, out2_text, w1_text, w2_text):
@@ -414,7 +473,7 @@ class Mult3SeesawDB(Mult2SeesawDB):
             return 
                    
         # init image widget label
-        super(Mult2SeesawDB, self).__init__(master, impath=os.path.join("graphics","Mult3Seesaw.JPG"), kwargs=kwargs)
+        super(Mult2SeesawDB, self).__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Mult3Seesaw.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in_text, out1_text, out2_text, out3_text, w1_text, w2_text, w3_text)
 
     def make_labels(self, master, name_text, in_text, out1_text, out2_text, out3_text, w1_text, w2_text, w3_text):
@@ -484,7 +543,7 @@ class Amp2SeesawSB(Mult2SeesawDB):
             return 
                    
         # init image widget label
-        super(Mult2SeesawDB, self).__init__(master, impath=os.path.join("graphics","Mult2Seesaw.JPG"), kwargs=kwargs)
+        super(Mult2SeesawDB, self).__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Mult2Seesaw.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in_text, th_text, out1_text, out2_text, w1_text, w2_text)
         
     def make_labels(self, master, name_text, in_text, th_text, out1_text, out2_text, w1_text, w2_text):
@@ -518,7 +577,7 @@ class Amp3SeesawSB(Mult3SeesawDB):
             return 
                    
         # init image widget label
-        super(Mult2SeesawDB, self).__init__(master, impath=os.path.join("graphics","Mult3Seesaw.JPG"), kwargs=kwargs)
+        super(Mult2SeesawDB, self).__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Mult3Seesaw.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in_text, th_text, out1_text, out2_text, out3_text, w1_text, w2_text, w3_text)
         
     def make_labels(self, master, name_text, in_text, th_text, out1_text, out2_text, out3_text, w1_text, w2_text, w3_text):
@@ -557,7 +616,7 @@ class Integ2SeesawSB(GateLabel):
             return 
                    
         # init image widget label
-        super().__init__(master, impath=os.path.join("graphics","Integ2Seesaw.JPG"), kwargs=kwargs)
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Integ2Seesaw.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in1_text, in2_text, out_text, w_text)
 
     def make_labels(self, master, name_text, in1_text, in2_text, out_text, w_text):
@@ -610,7 +669,7 @@ class Integ3SeesawSB(Integ2SeesawSB):
             return 
                    
         # init image widget label
-        super(Integ2SeesawSB, self).__init__(master, impath=os.path.join("graphics","Integ3Seesaw.JPG"), kwargs=kwargs)
+        super(Integ2SeesawSB, self).__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","Integ3Seesaw.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in1_text, in2_text, in3_text, out_text, w_text)
 
     def make_labels(self, master, name_text, in1_text, in2_text, in3_text, out_text, w_text):
@@ -655,7 +714,7 @@ class ThSeesawSB(GateLabel):
             return 
                    
         # init image widget label
-        super().__init__(master, impath=os.path.join("graphics","ThSeesaw.JPG"), kwargs=kwargs)
+        super().__init__(master, impath=os.path.join("C:\\Users\\user\\Desktop\\DNASim\\graphics","ThSeesaw.JPG"), kwargs=kwargs)
         self.make_labels(master, name_text, in_text, th_text, out_text)
 
     def make_labels(self, master, name_text, in_text, th_text, out_text):
