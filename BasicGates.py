@@ -15,31 +15,6 @@ class Gate:
         for s in self.get_seesaws_as_list():
             s.print_gate()
 
-    def tostring(self) -> str:
-        string = self.__class__.__name__
-        string += "(\"" + self.name + "\", ["
-        first = True
-        for inp in self.inputs:
-            if first:
-                first = False
-            else:
-                string += ", "
-            string += inp.name
-        string += "], "
-        if hasattr(self.outputs, '__iter__'):
-            first = True
-            string += "["
-            for out in self.outputs:
-                if first:
-                    first = False
-                else:
-                    string += ", "
-                string += out.name
-            string += "])"
-        else:
-            string += self.outputs.name + ")"
-        return string
-
 
 class PrimeGate(Gate):
     def __init__(self, name, inputs, output, weight, threshold_amount) -> None:

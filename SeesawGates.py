@@ -179,9 +179,6 @@ class ReporterSeesaw(Seesaw):
 
         self.__fluor.dt += ks * self.__reporter_gate.amount * self.__input.amount
 
-    def tostring(self):
-        return "ReporterSeesaw(\"" + self.name + "\", " + \
-            self.__input.name + ", " + self.__fluor.name + ")"
 
 
 class DelayGate(Seesaw):
