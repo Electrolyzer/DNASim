@@ -185,13 +185,13 @@ class ReporterSeesaw(Seesaw):
 
 
 class DelayGate(Seesaw):
-    def __init__(self, name, delayAmount, output):
+    def __init__(self, name, output, delay):
         self.name = name
         self.__Id = DnaBucket(name + "_Id", 100*Amounts.N)
         self.__output = output
         self.__output_gateS = DnaBucket(name + "_output_gate", 100*Amounts.N)
         self.__Id_gateS = DnaBucket(name + "_Id_gate", Amounts.EMPTY)
-        self.__delay = DnaBucket(name + "_delay", delayAmount*Amounts.N)
+        self.__delay = DnaBucket(name + "_delay", delay*Amounts.N)
         self.bucket_list = [self.__Id, self.__output, self.__delay, self.__output_gateS, self.__Id_gateS]
 
     def get_buckets_as_list(self) -> list:

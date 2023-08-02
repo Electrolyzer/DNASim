@@ -39,7 +39,7 @@ class NotGate(Gate):
         self.subtractOutput = DnaBucket(name + "_subtractOutput", Amounts.N)
         self.enableOutput = DnaBucket(name + "_enableOutput", Amounts.EMPTY)
 
-        self.delay_gate = DelayGate(name + "_delay_gate", delay, self.enabler)
+        self.delay_gate = DelayGate(name + "_delay_gate", self.enabler, delay)
         self.subtractionGate = SubtractionGate(name + "_subtractionGate", self.inp, self.subtractOutput)
         self.enableGate = GateEnable(name + "_GateEnable", self.enabler, self.subtractOutput, self.enableOutput)
         self.threshold = ThresholdingSeesaw(name + "_threshold", self.enableOutput, .5*Amounts.N, output)
