@@ -14,6 +14,3 @@ class DnaBucket:
 
     def print_bucket(self) -> None:
         print("\t\t" + self.name + ": " + str(self.amount))
-
-    def tostring(self) -> str:
-        return "DnaBucket(\"" + self.name + "\", " + str(self.amount) + ")"
