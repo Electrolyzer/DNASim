@@ -83,6 +83,8 @@ class CustomDialog(tk.Toplevel):
 #######################################################
 
 class GateLabel(tk.Label):
+    prompts = []
+    defaults = []
     def __init__(self, master, impath, **kwargs):
         # Load and resize the image
         img = Image.open(impath)
@@ -90,11 +92,25 @@ class GateLabel(tk.Label):
         img = img.resize((width//4,height//4))
         self.image = ImageTk.PhotoImage(img)
         self.labels = []
-        self.labelIds =[]
-        
-        # init image widget label
+        self.labelIds = []
+
+        self.prompts = ["name"] + self.prompts + ["out"]
+        self.defaults = [self.__class__.__name__] + self.defaults + ["out"]
+
+
+        self.dialog = CustomDialog(master, title="Gate Buckets", prompts=self.prompts, defaults=self.defaults)
+
+        master.wait_window(self.dialog)
+        if not self.dialog.result:
+            # If there is no result (user closed window) then cancel operation
+            return
+
         super().__init__(master, image=self.image)
-        
+        self.prompts = []
+        self.defaults = []
+        self.make_labels(master, **self.dialog.result)
+
+
     def get_name_string(self):
         return self.name_label["text"]
         
@@ -118,16 +134,16 @@ class GateLabel(tk.Label):
 
 class GateTwoInOneOut(GateLabel):
     def __init__(self, master, impath, **kwargs):
-        # Get buckets dialog
-        dialog = CustomDialog(master, title="Gate Buckets", prompts=["name", "in1", "in2", "out"])
-        master.wait_window(dialog)
-        if not dialog.result:
-            # If there is no result (user closed window) then cancel operation
-            return 
+
+        self.prompts = ["in1", "in2"] + self.prompts
+        self.defaults = ["in1", "in2"] + self.defaults
                    
         # init image widget label
         super().__init__(master, impath=impath, kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        if not self.dialog.result:
+            # If there is no result (user closed window) then cancel operation
+            return
+        
     
     def make_labels(self, master, name, in1, in2, out, **kwargs):
         # Create the text labels
@@ -155,16 +171,15 @@ class GateTwoInOneOut(GateLabel):
 
 class GateOneInOneOut(GateLabel):
     def __init__(self, master, impath, **kwargs):
-        # Get buckets dialog
-        dialog = CustomDialog(master, title="Gate Buckets", prompts=["name", "input", "out", "delay"],
-                                                            defaults=["name", "input", "out", "1"])
-        master.wait_window(dialog)
-        if not dialog.result:
-            return
 
-        # init image widget label
+        self.prompts = ["input"] + self.prompts
+        self.defaults = ["input"] + self.defaults
+
         super().__init__(master, impath=impath, kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        if not self.dialog.result:
+            return
+        
+        
 
     def make_labels(self, master, name, input, out, delay, **kwargs):
         # Create the text labels
@@ -211,16 +226,13 @@ class NotSB(GateOneInOneOut):
 
 class DelaySB(GateLabel):
     def __init__(self, master, **kwargs):
-        # Get buckets dialog
-        dialog = CustomDialog(master, title="Gate Buckets", prompts=["name", "out", "delay"],
-                                                            defaults=["name", "out", "1"])
-        master.wait_window(dialog)
-        if not dialog.result:
-            return
+        self.prompts += [delay]
+        self.defaults += [10]
 
-            # init image widget label
         super().__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Delay.PNG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        if not self.dialog.result:
+            return
+        
 
     def make_labels(self, master, name, out, delay):
         # Create the text labels
@@ -250,21 +262,19 @@ class DelaySB(GateLabel):
 
 class ReporterSB(GateLabel):
     def __init__(self, master, **kwargs):
-        # Get buckets dialog
-        dialog = CustomDialog(master, title="Gate Buckets", prompts=["name", "input", "fluor"])
-        master.wait_window(dialog)
-        if not dialog.result:
+        
+        super().__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Reporter.jpg"), kwargs=kwargs)
+        if not self.dialog.result:
             return
 
             # init image widget label
-        super().__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Reporter.jpg"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
-    def make_labels(self, master, name, input, fluor):
+    def make_labels(self, master, name, input, output):
         # Create the text labels
         self.name_label = tk.Label(master, text=name)
         self.in_label = tk.Label(master, text=input)
-        self.fluor_label = tk.Label(master, text=fluor)
+        self.fluor_label = tk.Label(master, text=output)
         self.interface_buckets = [(self.in_label["text"], "ON"), (self.fluor_label["text"], "EMPTY")]
 
         self.labels += [self.name_label, self.in_label, self.fluor_label]
@@ -323,17 +333,15 @@ class Nand2DB(GateTwoInOneOut):
 #######################################################
 
 class Threshold2DB(GateTwoInOneOut):
-    def __init__(self, master, **kwargs):
-        # Get buckets dialog
-        dialog = CustomDialog(master, title="Gate Buckets", prompts=["name", "in1", "in2", "w1", "w2", "out", "threshold"],\
-                                                            defaults=["Th1", "in1", "in2", "1", "1", "out", "1.7"])
-        master.wait_window(dialog)
-        if not dialog.result:
+    def __init__(self, master, impath = None, **kwargs):
+        print(self.prompts)
+        self.prompts += ["w1", "w2", "threshold"]
+        self.defaults += ["1", "1", "1.7"]
+        impath = impath if impath else os.path.join(os.path.abspath(__file__), "..//graphics//And2.JPG")
+        super().__init__(master, impath=impath, kwargs = kwargs)
+        if not self.dialog.result:
             return
-
-        # init image widget label
-        super(GateTwoInOneOut, self).__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//And2.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, in1, in2, w1, w2, out, threshold):
         # Create the text labels
@@ -362,16 +370,14 @@ class Threshold2DB(GateTwoInOneOut):
 
 class Threshold3DB(Threshold2DB):
     def __init__(self, master, **kwargs):
-        # Get buckets dialog
-        dialog = CustomDialog(master, title="Gate Buckets", prompts=["name", "in1", "in2", "in3", "w1", "w2", "w3", "out", "threshold"],\
-                                                            defaults=["Th1", "in1", "in2", "in3", "1", "1", "1", "out", "2.7"])
-        master.wait_window(dialog)
-        if not dialog.result:
-            return
+
+        self.prompts += ["in3", "w3"]
+        self.defaults += ["in3", "1"]
 
         # init image widget label
-        super(GateTwoInOneOut, self).__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Threshold3.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        super().__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Threshold3.JPG"), kwargs=kwargs)
+        if not self.dialog.result:
+            return
 
     def make_labels(self, master, name, in1, in2, in3, w1, w2, w3, out, threshold):
         # Create the text labels
@@ -407,7 +413,7 @@ class Threshold4DB(Threshold3DB):
 
         # init image widget label
         super(GateTwoInOneOut, self).__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Threshold4.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, in1, in2, in3, in4, w1, w2, w3, w4, out, threshold):
         # Create the text labels
@@ -447,7 +453,7 @@ class Mult2SeesawDB(GateLabel):
 
         # init image widget label
         super().__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Mult2Seesaw.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, input, out1, out2, w1, w2):
         # Create the text labels
@@ -492,7 +498,7 @@ class Mult3SeesawDB(Mult2SeesawDB):
 
         # init image widget label
         super(Mult2SeesawDB, self).__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Mult3Seesaw.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, input, out1, out2, out3, w1, w2, w3, **kwargs):
         # Create the text labels
@@ -561,7 +567,7 @@ class Amp2SeesawSB(Mult2SeesawDB):
 
         # init image widget label
         super(Mult2SeesawDB, self).__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Mult2Seesaw.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, input, threshold, out1, out2, w1, w2):
         # Create the text labels
@@ -593,7 +599,7 @@ class Amp3SeesawSB(Mult3SeesawDB):
 
         # init image widget label
         super(Mult2SeesawDB, self).__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Mult3Seesaw.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, input, threshold, out1, out2, out3, w1, w2, w3):
         # Create the text labels
@@ -631,7 +637,7 @@ class Integ2SeesawSB(GateLabel):
 
         # init image widget label
         super().__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Integ2Seesaw.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, in1, in2, out, weight):
         # Create the text labels
@@ -676,7 +682,7 @@ class Integ3SeesawSB(Integ2SeesawSB):
 
         # init image widget label
         super(Integ2SeesawSB, self).__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//Integ3Seesaw.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, in1, in2, in3, out, weight):
         # Create the text labels
@@ -720,7 +726,7 @@ class ThSeesawSB(GateLabel):
 
         # init image widget label
         super().__init__(master, impath=os.path.join(os.path.abspath(__file__),"..//graphics//ThSeesaw.JPG"), kwargs=kwargs)
-        self.make_labels(master, **dialog.result)
+        
 
     def make_labels(self, master, name, input, threshold, out):
         # Create the text labels
